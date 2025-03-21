@@ -3,6 +3,8 @@ import edu.princeton.cs.algs4.StdIn;
 /** Simple Arithmetic Class.
  * @author Josh Hug
  * */
+
+// lab1
 public class Arithmetic {
 
     /** Computes product of two ints.
