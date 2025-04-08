@@ -10,11 +10,11 @@ import java.util.Map;
 public class SpeciesListStage implements AdventureStage {
 
     // Honestly I just find O'Reilly's animals to be really cool
-    private static final List<String> REFERENCE_1 = List.of(
+    private static final List<String> REFERENCE_1 = List.of( // leopards,bison
             "leopards",     // Reactive Systems in Java
             "bison"         // Java EXTREME Programming Cookbook
     );
-    private static final List<String> REFERENCE_2 = List.of(
+    private static final List<String> REFERENCE_2 = List.of( // squirrels,hummingbirds
             "squirrels",    // Java: The Good Parts
             "hummingbirds"  // Better, Faster, Lighter Java
     );
@@ -91,6 +91,10 @@ public class SpeciesListStage implements AdventureStage {
      * If there is no similarity, it should return 0.
      */
     public static int arraySimilarity(List<String> listOne, List<String> listTwo) {
+        if(listOne.size() == 0 || listTwo.size() == 0){ // 特殊情况处理
+            return 0;
+        }
+
         List<String> copy = new ArrayList<>(listOne);
         int similarObjects = 0;
         for (String o : listTwo) {
