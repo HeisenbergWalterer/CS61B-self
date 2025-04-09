@@ -6,7 +6,6 @@ import game2048rendering.Tile;
 
 import java.util.Formatter;
 
-
 /** The state of a game of 2048.
  *  @author P. N. Hilfinger + Josh Hug
  */
@@ -24,16 +23,14 @@ public class Model {
     /** Largest piece value. */
     public static final int MAX_PIECE = 2048;
 
-    /** A new 2048 game on a board of size SIZE with no pieces
+    /** A new 2048 game on a board of size with no pieces
      *  and score 0. */
+    // 构造函数
     public Model(int size) {
         board = new Board(size);
         score = 0;
     }
-
-    /** A new 2048 game where RAWVALUES contain the values of the tiles
-     * (0 if null). VALUES is indexed by (x, y) with (0, 0) corresponding
-     * to the bottom-left corner. Used for testing purposes. */
+    // 含值构造函数
     public Model(int[][] rawValues, int score) {
         board = new Board(rawValues);
         this.score = score;
@@ -80,75 +77,120 @@ public class Model {
         return board;
     }
 
-    /** Returns true if at least one space on the Board is empty.
-     *  Empty spaces are stored as null.
-     * */
+    // 存在一个null则返回true
     public boolean emptySpaceExists() {
-        // TODO: Task 2. Fill in this function.
+        int size = board.size();
+
+        for(int i = 0; i < size; i++)
+        {
+            for(int j = 0; j < size; j++)
+            {
+                if(board.tile(i, j) == null)
+                {
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 
-    /**
-     * Returns true if any tile is equal to the maximum valid value.
-     * Maximum valid value is given by this.MAX_PIECE. Note that
-     * given a Tile object t, we get its value with t.value().
-     */
+    // 获胜则返回true
     public boolean maxTileExists() {
-        // TODO: Task 3. Fill in this function.
+        int size = board.size();
+
+        for(int i = 0; i < size; i++)
+        {
+            for(int j = 0; j < size; j++)
+            {
+                if((board.tile(i, j) != null) && (board.tile(i, j).value() == MAX_PIECE))
+                {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
-    /**
-     * Returns true if there are any valid moves on the board.
-     * There are two ways that there can be valid moves:
-     * 1. There is at least one empty space on the board.
-     * 2. There are two adjacent tiles with the same value.
-     */
+    // 检查有无可合并项
+    private boolean isMergeable(){
+        int size = board.size();
+        for(int i = 0; i < size; i++){
+            for(int j = 0; j < size; j++){
+                if((i - 1 >= 0 && board.tile(i - 1, j).value() == board.tile(i, j).value()) ||
+                        (i + 1 < size && board.tile(i + 1, j).value() == board.tile(i, j).value()) ||
+                        (j - 1 >= 0 && board.tile(i, j).value() == board.tile(i, j - 1).value()) ||
+                        (j + 1 < size && board.tile(i, j).value() == board.tile(i, j + 1).value())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    // 至少存在一个可行移动
     public boolean atLeastOneMoveExists() {
-        // TODO: Fill in this function.
-        return false;
+        if(emptySpaceExists()){
+            return true;
+        }else{
+            if(isMergeable()){
+                return true;
+            }else{
+                return false;
+            }
+        }
     }
 
-    /**
-     * Moves the tile at position (x, y) as far up as possible.
-     *
-     * Rules for Tilt:
-     * 1. If two Tiles are adjacent in the direction of motion and have
-     *    the same value, they are merged into one Tile of twice the original
-     *    value and that new value is added to the score instance variable
-     * 2. A tile that is the result of a merge will not merge again on that
-     *    tilt. So each move, every tile will only ever be part of at most one
-     *    merge (perhaps zero).
-     * 3. When three adjacent tiles in the direction of motion have the same
-     *    value, then the leading two tiles in the direction of motion merge,
-     *    and the trailing tile does not.
-     */
+    // 将单个方块向上移动到指定位置（包括合并）
     public void moveTileUpAsFarAsPossible(int x, int y) {
         Tile currTile = board.tile(x, y);
         int myValue = currTile.value();
         int targetY = y;
 
-        // TODO: Tasks 5, 6, and 10. Fill in this function.
+        while(true){
+            targetY++;
+            if(targetY < board.size() && board.tile(x, targetY) == null){
+                continue;
+            }else{
+                if(targetY < board.size() && board.tile(x, targetY).value() == myValue &&
+                        !board.tile(x, targetY).wasMerged()){
+                    score += myValue * 2;
+                    break;
+                }
+                targetY--;
+                break;
+            }
+        }
+
+        if(targetY == y){
+            return;
+        }else {
+            board.move(x, targetY, currTile);
+        }
     }
 
-    /** Handles the movements of the tilt in column x of the board
-     * by moving every tile in the column as far up as possible.
-     * The viewing perspective has already been set,
-     * so we are tilting the tiles in this column up.
-     * */
+    // 将整行向上移动到指定位置（包括合并）
     public void tiltColumn(int x) {
-        // TODO: Task 7. Fill in this function.
+        for(int y = board.size() - 1; y >= 0; y--){ // 自上而下移动方块
+            if(board.tile(x, y) != null) {
+                moveTileUpAsFarAsPossible(x, y);
+            }
+        }
     }
 
+    // 将整个board向上移动
     public void tilt(Side side) {
-        // TODO: Tasks 8 and 9. Fill in this function.
+        for(int x = 0; x < board.size(); x++){
+            tiltColumn(x);
+        }
     }
 
     /** Tilts every column of the board toward SIDE.
      */
     public void tiltWrapper(Side side) {
         board.resetMerged();
+        board.setViewingPerspective(side);
         tilt(side);
+        board.setViewingPerspective(Side.NORTH);
     }
 
 
