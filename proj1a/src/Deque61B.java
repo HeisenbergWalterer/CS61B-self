@@ -58,7 +58,7 @@ public interface Deque61B<T> {
     /**
      * The Deque61B abstract data type does not typically have a get method,
      * but we've included this extra operation to provide you with some
-     * extra programming practice. Gets the element, iteratively. Returns
+     * extra programming practice. Gets the element, 迭代. Returns
      * null if index is out of bounds. Does not alter the deque.
      *
      * @param index index to get
@@ -68,7 +68,7 @@ public interface Deque61B<T> {
 
     /**
      * This method technically shouldn't be in the interface, but it's here
-     * to make testing nice. Gets an element, recursively. Returns null if
+     * to make testing nice. Gets an element, 递归. Returns null if
      * index is out of bounds. Does not alter the deque.
      *
      * @param index index to get
