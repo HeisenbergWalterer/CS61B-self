@@ -1,22 +1,61 @@
 package deque;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.lang.Math;
 
-public class ArrayDeque61B<T> implements Deque61B<T> {
+public class MaxArrayDeque61B<T> implements Deque61B<T> {
     private int length;
     private int size = 8; // 数组大小
     private T[] item;
     private int head, tail;
+    Comparator<T> comparator;
 
     @SuppressWarnings("unchecked")
-    public ArrayDeque61B() {
+//    public MaxArrayDeque61B() {
+//        item = (T[]) new Object[size];
+//        length = 0;
+//        head = 0; // 指向头元素位置
+//        tail = 0; // 指向末元素位置
+//    }
+
+    // Comparator用于存储自定义排序规则
+    // 而该接口下的compare即是用于按自定义规则比较两元素
+    public MaxArrayDeque61B(Comparator<T> c) {
         item = (T[]) new Object[size];
         length = 0;
         head = 0; // 指向头元素位置
         tail = 0; // 指向末元素位置
+        comparator = c;
+    }
+
+    public T max() {
+        if(this.isEmpty()) {
+            return null;
+        }
+        T maxItem = this.get(0);
+        for(int i = 1; i < length; i++) {
+            T currentItem = this.get(i);
+            if(comparator.compare(currentItem, maxItem) > 0) {
+                maxItem = currentItem;
+            }
+        }
+        return maxItem;
+    }
+
+    public T max(Comparator<T> c) {
+        if(this.isEmpty()) {
+            return null;
+        }
+        T maxItem = this.get(0);
+        for(int i = 1; i < length; i++) {
+            T currentItem = this.get(i);
+            if(c.compare(currentItem, maxItem) > 0) {
+                maxItem = currentItem;
+            }
+        }
+        return maxItem;
     }
 
     @SuppressWarnings("unchecked")
@@ -25,9 +64,6 @@ public class ArrayDeque61B<T> implements Deque61B<T> {
         for(int i = 0; i < item.length; i++) { // item已满，所以此时size = length
             newItem[i] = get(i);
         }
-        head = 0;
-        tail = (length == 0) ? 0 : length - 1;
-
         return newItem;
     }
 
@@ -89,24 +125,15 @@ public class ArrayDeque61B<T> implements Deque61B<T> {
 
     @SuppressWarnings("unchecked")
     T[] reduce(T[] item, int size) {
-        // 计算新的数组大小，确保它至少为16，或者是当前长度的2倍
-        int newSize = Math.max(16, length * 2);
-
-        // 创建新数组
+        int newSize = item.length * 4; // newSize = length * 4 : 内存利用率始终为25%
         T[] newItem = (T[]) new Object[newSize];
 
-        // 正确处理循环数组：将所有实际元素按顺序复制到新数组的开头
-        for(int i = 0; i < length; i++) {
-            // 使用get方法获取有效元素，它会处理循环索引的计算
+        for(int i = 0; i < item.length; i++) {
             newItem[i] = get(i);
         }
-
-        // 重置head和tail指针，使数组中不再有"空洞"
-        head = 0;
-        tail = (length == 0) ? 0 : length - 1;
-
         return newItem;
     }
+
 
     @Override
     public T removeFirst() {
@@ -171,8 +198,8 @@ public class ArrayDeque61B<T> implements Deque61B<T> {
         if(this == other) {
             return true;
         }
-        if(other instanceof ArrayDeque61B<?>) {
-            ArrayDeque61B ad = (ArrayDeque61B) other;
+        if(other instanceof MaxArrayDeque61B<?>) {
+            MaxArrayDeque61B ad = (MaxArrayDeque61B) other;
 
             if(this.size() != ad.size()) {
                 return false;
@@ -193,14 +220,14 @@ public class ArrayDeque61B<T> implements Deque61B<T> {
     // 迭代器实现
     @Override
     public Iterator<T> iterator() {
-        return new ArrayDeque61BIterator();
+        return new MaxArrayDeque61B.MaxArrayDeque61BIterator();
     }
-    private class ArrayDeque61BIterator implements Iterator<T> {
-        int index = 0;
+    private class MaxArrayDeque61BIterator implements Iterator<T> {
+        int index;
 
         @Override
         public boolean hasNext() {
-            return index < length;
+            return index < size;
         }
 
         @Override
