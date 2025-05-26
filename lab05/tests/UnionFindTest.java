@@ -86,6 +86,22 @@ public class UnionFindTest {
      * of all methods in your implementation.
      */
 
-}
+    /**
+     * 测试路径压缩效果。使用一种不依赖于具体实现的方法来测试。
+     */
+    @Test
+    public void pathCompressionTest() {
+        UnionFind uf = new UnionFind(10);
 
+        // 创建一个特殊的结构：先创建多个独立的树
+        uf.union(1, 0); // 0和1在一个集合，1是根
+        uf.union(3, 2); // 2和3在一个集合，3是根
+        uf.union(1, 3); // 4和5在一个集合，5是根
+
+        assertThat(uf.parent(1)).isEqualTo(0);
+        assertThat(uf.find(1)).isEqualTo(2);
+        assertThat(uf.parent(1)).isEqualTo(2);
+
+    }
+}
 
