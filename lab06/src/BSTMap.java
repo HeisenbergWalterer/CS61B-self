@@ -216,7 +216,10 @@ public class BSTMap<k extends Comparable<k>, v> implements Map<k, v> {
 
         k keyK = (k) key;
 
-        return find(this.root, keyK).value;
+        if(find(this.root, keyK) != null) {
+            return find(this.root, keyK).value;
+        }
+        return null;
     }
 
     /**
@@ -255,6 +258,10 @@ public class BSTMap<k extends Comparable<k>, v> implements Map<k, v> {
         return valuePre;
     }
 
+    public boolean isLeafNode(BSTNode node) {
+        return (node.left == null && node.right == null);
+    }
+
     /**
      * Removes the mapping for a key from this map if it is present
      * (optional operation).   More formally, if this map contains a mapping
@@ -291,19 +298,98 @@ public class BSTMap<k extends Comparable<k>, v> implements Map<k, v> {
 
         k keyK = (k) key;
 
-        if(!containsKey(keyK)) {
+        // 无key || 树为空
+        if(!containsKey(keyK) || root == null) {
             return null;
         }
-        BSTNode temp = find(this.root, keyK);
 
+        v valReturn = null;
+        BSTNode delNode = root;;
+        BSTNode delNodeParent = null;
+        boolean isLeft = false;
 
-        return null;
+        // 找到要删除的节点
+        while(delNode != null && !delNode.key.equals(keyK)) {
+            delNodeParent = delNode;
+            if(delNode.key.compareTo(keyK) > 0) {
+                delNode = delNode.left;
+                isLeft = true;
+            } else {
+                delNode = delNode.right;
+                isLeft = false;
+            }
+        }
+
+        valReturn = delNode.value;
+
+        // 为叶节点
+        if(isLeafNode(delNode)) {
+            if (delNode == root) {
+                root = null;
+            } else if (isLeft) {
+                delNodeParent.left = null;
+            } else {
+                delNodeParent.right = null;
+            }
+        }
+
+        // 只有右子节点
+        else if(delNode.left == null) {
+            if(delNode == root) {
+                root = delNode.right;
+            } else if(isLeft) {
+                delNodeParent.left = delNode.right;
+            } else {
+                delNodeParent.right = delNode.right;
+            }
+        }
+        // 只有左子节点
+        else if(delNode.right == null) {
+            if(delNode == root) {
+                root = delNode.left;
+            } else if(isLeft) {
+                delNodeParent.left = delNode.left;
+            } else {
+                delNodeParent.right = delNode.left;
+            }
+        }
+
+        // 有两个子节点
+        else {
+            // 先寻找后继节点（把右子树的最小项）
+            BSTNode successor = delNode.right;
+            BSTNode sucParent = delNode;
+
+            while(successor.left != null) {
+                sucParent = successor;
+                successor = successor.left;
+            }
+
+            // 如果后继节点不是直接的右子节点
+            if(!successor.equals(delNode.right)) {
+                sucParent.left = successor.right;
+                successor.right = delNode.right;
+            }
+
+            successor.left = delNode.left;
+
+            if(delNode == root) {
+                root = successor;
+            } else if(isLeft) {
+                delNodeParent.left = successor;
+            } else {
+                delNodeParent.right = successor;
+            }
+        }
+
+        size--;
+        return valReturn;
     }
 
     /**
      * Copies all of the mappings from the specified map to this map
      * (optional operation).  The effect of this call is equivalent to that
-     * of calling {@link #put(Object, Object) put(k, v)} on this map once
+     * of calling  on this map once
      * for each mapping from key {@code k} to value {@code v} in the
      * specified map.  The behavior of this operation is undefined if the specified map
      * is modified while the operation is in progress. If the specified map has a defined
